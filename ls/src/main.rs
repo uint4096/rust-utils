@@ -1,4 +1,4 @@
-use std::fs::Metadata;
+use std::fs::{Metadata, DirEntry};
 use std::os::unix::prelude::{PermissionsExt, MetadataExt};
 use std::time::SystemTime;
 use std::{io, fs};
@@ -84,11 +84,28 @@ impl Entity {
 }
 
 
-fn get_entites(dir: &str) -> io::Result<()> {
+fn get_entites(dir: &str, ignore_hidden: bool) -> io::Result<()> {
   let files = fs::read_dir(dir).expect("Error while reading directory!");
-  let dir_entries = files
+  /*
+   *@todo: I'd rather have an iterator here. How do we get an iterator of the same type
+   * here for both if and else blocks?
+   */
+  let dir_entries: Vec<io::Result<DirEntry>> = if ignore_hidden {
+    files.filter(|f| {
+      // Q. Why does as_ref magically fix everything here?
+      let file = f.as_ref().expect("Corrupt Entry");
+
+      if ignore_hidden {
+        !file.file_name().to_str().unwrap().starts_with('.')
+      } else { true }
+    }).collect()
+  } else {
+    files.filter(|_| true).collect()
+  };
+
+  let entries = dir_entries.iter()
     .map(| file | {
-      let file_entry = file.expect("Corrupt entry!");
+      let file_entry = file.as_ref().expect("Corrupt entry!");
       let metadata = file_entry.metadata();
       let file_name = file_entry.file_name().to_str().unwrap().to_owned();
       match Entity::new(&file_name, metadata) {
@@ -98,7 +115,7 @@ fn get_entites(dir: &str) -> io::Result<()> {
     })
     .collect();
 
-  let _ = Entity::format_rows(dir_entries)
+  let _ = Entity::format_rows(entries)
     .iter()
     .for_each(| entry | println!("{}", entry));
 
@@ -107,7 +124,7 @@ fn get_entites(dir: &str) -> io::Result<()> {
 
 fn main() {
   let ls_args: Option<String> = args().skip(1).next();
-  let _agruments: Vec<char> = match ls_args {
+  let agruments: Vec<char> = match ls_args {
       Some(str) => {
           if str.starts_with('-') {
               str.chars().collect()
@@ -120,5 +137,7 @@ fn main() {
       }
   };
 
-  let _ = get_entites(".");
+  let ignore_hidden = !agruments.contains(&'a');
+
+  let _ = get_entites("/home/abhishek", ignore_hidden);
 }
