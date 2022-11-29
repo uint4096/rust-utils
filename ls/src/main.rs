@@ -49,7 +49,7 @@ impl Entity {
     })
   }
 
-  fn format_rows(rows: Vec<Entity>) -> Vec<String> {
+  fn format_rows(mut rows: Vec<Entity>) -> Vec<String> {
     let format_with_spaces = | max_len: usize, elem: &String | {
       let num_spaces = max_len - elem.len();
       let spaces = (0..num_spaces).fold(String::from(""), | mut s, _ | { s.push(' '); s });
@@ -66,17 +66,20 @@ impl Entity {
         tup
       });
 
-    rows.iter().map(| row | format!(
-      "{}{} {} {} {} {} {} {}",
-      if row.is_file { "-" } else { "d" },
-      row.permissions.get_str_permissions(),
-      row.links,
-      format_with_spaces(user_max_len, &row.owner),
-      format_with_spaces(group_max_len, &row.group),
-      format_with_spaces(size_max_len, &row.size.to_string()),
-      time::systemtime_strftime(row.last_modified),
-      row.name
-    )).collect()
+    rows.sort_by(|a, b| b.is_file.cmp(&a.is_file));
+    rows.iter()
+      .map(| row | format!(
+        "{}{} {} {} {} {} {} {}",
+        if row.is_file { "-" } else { "d" },
+        row.permissions.get_str_permissions(),
+        row.links,
+        format_with_spaces(user_max_len, &row.owner),
+        format_with_spaces(group_max_len, &row.group),
+        format_with_spaces(size_max_len, &row.size.to_string()),
+        time::format_system_time(row.last_modified),
+        if row.is_file { format!("{}", row.name) } else { format!("\x1b[31;1m{}\x1b[0m", row.name) }
+      ))
+      .collect()
   }
 }
 
