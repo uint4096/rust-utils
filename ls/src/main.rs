@@ -21,16 +21,15 @@ struct Entity {
 }
 
 impl Entity {
-  fn new (name: &str, metadata: io::Result<Metadata>) -> io::Result<Entity> {
-    let meta = metadata?;
-    let owner = get_user_by_uid(meta.uid())
+  fn new (name: &str, metadata: Metadata) -> io::Result<Entity> {
+    let owner = get_user_by_uid(metadata.uid())
       .unwrap()
       .name()
       .to_str()
       .unwrap()
       .to_owned();
     
-    let group = get_group_by_gid(meta.gid())
+    let group = get_group_by_gid(metadata.gid())
       .unwrap()
       .name()
       .to_str()
@@ -38,13 +37,13 @@ impl Entity {
       .to_owned(); 
 
     Ok(Entity {
-      permissions: Permission::get_permission(meta.permissions().mode()),
-      is_file: meta.is_file(),
+      permissions: Permission::get_permission(metadata.permissions().mode()),
+      is_file: metadata.is_file(),
       owner,
       group,
-      last_modified: meta.modified()?,
-      links: meta.nlink(),
-      size: meta.size(),
+      last_modified: metadata.modified()?,
+      links: metadata.nlink(),
+      size: metadata.size(),
       name: name.to_owned(),
     })
   }
@@ -83,8 +82,7 @@ impl Entity {
   }
 }
 
-
-fn get_entites(dir: &str, ignore_hidden: bool) -> io::Result<()> {
+fn get_entries (dir: &str, ignore_hidden: bool) -> Vec<io::Result<DirEntry>> {
   let files = fs::read_dir(dir).expect("Error while reading directory!");
   /*
    *@todo: I'd rather have an iterator here. How do we get an iterator of the same type
@@ -94,19 +92,21 @@ fn get_entites(dir: &str, ignore_hidden: bool) -> io::Result<()> {
     files.filter(|f| {
       // Q. Why does as_ref magically fix everything here?
       let file = f.as_ref().expect("Corrupt Entry");
-
-      if ignore_hidden {
-        !file.file_name().to_str().unwrap().starts_with('.')
-      } else { true }
+      if ignore_hidden { !file.file_name().to_str().unwrap().starts_with('.')}
+      else { true }
     }).collect()
   } else {
     files.filter(|_| true).collect()
   };
 
+  dir_entries
+}
+
+fn print_list(dir_entries: Vec<io::Result<DirEntry>>) -> () {
   let entries = dir_entries.iter()
     .map(| file | {
       let file_entry = file.as_ref().expect("Corrupt entry!");
-      let metadata = file_entry.metadata();
+      let metadata = file_entry.metadata().expect("Unable to get metadata!");
       let file_name = file_entry.file_name().to_str().unwrap().to_owned();
       match Entity::new(&file_name, metadata) {
         Ok(e) => { e }
@@ -118,8 +118,22 @@ fn get_entites(dir: &str, ignore_hidden: bool) -> io::Result<()> {
   let _ = Entity::format_rows(entries)
     .iter()
     .for_each(| entry | println!("{}", entry));
+}
 
-  Ok(())
+fn print_names (dir_entries: Vec<io::Result<DirEntry>>) -> () {
+  let _ = dir_entries.iter()
+    .for_each(| entry | {
+      let file = entry.as_ref().expect("Corrupt entry!");
+      let metadata = file.metadata().expect("Unable to get metadata!");
+      let file_name = file.file_name().to_str().unwrap().to_owned();
+      if metadata.is_file() {
+        print!("{} ", file_name);
+      } else {
+        print!("\x1b[31;1m{}\x1b[0m ", file_name);
+      }
+    });
+
+  println!("");
 }
 
 fn main() {
@@ -138,6 +152,10 @@ fn main() {
   };
 
   let ignore_hidden = !agruments.contains(&'a');
-
-  let _ = get_entites("/home/abhishek", ignore_hidden);
+  let dir_entries = get_entries("/home/abhishek", ignore_hidden);
+  let _ = if agruments.contains(&'l') {
+    print_list(dir_entries)
+  } else {
+    print_names(dir_entries)
+  };
 }
