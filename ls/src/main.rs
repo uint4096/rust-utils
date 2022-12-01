@@ -137,23 +137,23 @@ fn print_names (dir_entries: Vec<io::Result<DirEntry>>) -> () {
 }
 
 fn main() {
-  let ls_args: Option<String> = args().skip(1).next();
-  let agruments: Vec<char> = match ls_args {
-      Some(str) => {
-          if str.starts_with('-') {
-              str.chars().collect()
-          } else {
-              vec![]
-          }
-      }
-      None => {
-          vec![]
-      }
+  let ls_args: Vec<String> = args().skip(1).collect();
+  let ls_options = ls_args.iter().find(| a | a.starts_with('-'));
+  let ls_dir = ls_args.iter().find(|a| !a.starts_with('-'));
+
+  let options = match ls_options {
+    Some(option) => { option.chars().collect() }
+    None => { vec![] }
   };
 
-  let ignore_hidden = !agruments.contains(&'a');
-  let dir_entries = get_entries("/home/abhishek", ignore_hidden);
-  let _ = if agruments.contains(&'l') {
+  let dir = match ls_dir {
+      Some(dir) => { dir }
+      None => { "." }
+  };
+
+  let ignore_hidden = !options.contains(&'a');
+  let dir_entries = get_entries(&dir, ignore_hidden);
+  let _ = if options.contains(&'l') {
     print_list(dir_entries)
   } else {
     print_names(dir_entries)
