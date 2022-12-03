@@ -1,4 +1,4 @@
-use crate::elements::types::PermissionTypes;
+use crate::permissions::types::PermissionTypes;
 
 pub struct Permission {
   user: String,
