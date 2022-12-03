@@ -1,5 +1,5 @@
+use chrono::{DateTime, Local, Utc};
 use std::time::SystemTime;
-use chrono::{Utc, Local, DateTime};
 
 pub fn format_system_time(dt: SystemTime) -> String {
     let date_time: DateTime<Utc> = dt.into();
