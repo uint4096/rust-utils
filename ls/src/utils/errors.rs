@@ -8,11 +8,10 @@ pub enum Errors {
 
 impl Errors {
     fn get_error_message(&self, file_name: String) -> String {
-        let corrupt_file = String::from("Corrupt file entry");
-        let metadata_failure = String::from("Unable to fetch metadata");
-        let row_failure = String::from("Unable to create row for this file");
-        let file_name_meta =
-            String::from("[Meta] You need to specify a file name for this error type");
+        let corrupt_file = "Corrupt file entry";
+        let metadata_failure = "Unable to fetch metadata";
+        let row_failure = "Unable to create row for this file";
+        let file_name_meta = "[Meta] You need to specify a file name for this error type";
 
         match self {
             Errors::CorruptFile => {
@@ -24,7 +23,7 @@ impl Errors {
             Errors::RowFailure => {
                 format!("{}! File name: {}", row_failure, file_name)
             }
-            Errors::FileNameMeta => file_name_meta,
+            Errors::FileNameMeta => file_name_meta.to_owned(),
         }
     }
 }
