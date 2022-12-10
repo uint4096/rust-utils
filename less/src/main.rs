@@ -13,8 +13,8 @@ fn main() {
 
 fn display_text(path: &str) {
     let stdin = stdin();
-
-    let mut reader = match Reader::new(path) {
+    let reader = Reader(path.to_owned()); 
+    let mut lines = match reader.get_lines() {
         Ok(r) => r,
         Err(e) => {
             panic!("Failed to read file! Error: {e}")
@@ -29,7 +29,7 @@ fn display_text(path: &str) {
                 Key::Char('q') => break,
                 Key::Down => {
                     terminal.term_action(Operations::NextLine);
-                    match reader.next().unwrap() {
+                    match lines.next().unwrap() {
                         Ok(line) => println!("{line}"),
                         Err(e) => panic!("Error while displaying text, {e}"),
                     }
@@ -37,8 +37,8 @@ fn display_text(path: &str) {
                 _ => {}
             }
         }
-    }
 
-    terminal.term_action(Operations::NextLine);
-    terminal.term_action(Operations::ToggleCursor);
+        terminal.term_action(Operations::NextLine);
+        terminal.term_action(Operations::ToggleCursor);
+    }
 }

@@ -1,7 +1,6 @@
 use std::io::{stdout, Result, Stdout, Write};
 use termion::raw::{IntoRawMode, RawTerminal};
 
-#[derive(PartialEq)]
 pub enum Operations {
     NextLine,
     ToggleCursor,
@@ -31,7 +30,7 @@ pub struct Term {
 }
 
 impl Term {
-    pub fn new() -> Term {
+    pub fn new() -> Self {
         /*
          * When the terminal is in cooked mode, it waits for the user to press Enter
          * before processing any command. Raw mode is when it processes commands on
@@ -44,7 +43,7 @@ impl Term {
         match stdout().into_raw_mode() {
             Ok(mut term) => match write!(term, "{}", termion::cursor::Goto(1, 1)) {
                 Ok(_) => {
-                    let mut t = Term {
+                    let mut t = Self {
                         stdout: term,
                         positon: (1, 1),
                         cursor: true,
@@ -63,7 +62,7 @@ impl Term {
 
                 println!("Unable to switch to raw mode! Retrying...");
                 retry.inc_term_retry();
-                Term::new()
+                Self::new()
             }
         }
     }

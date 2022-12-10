@@ -22,9 +22,9 @@ impl NoFileError {
 impl fmt::Display for NoFileError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if !self.is_directory {
-            write!(f, "Well, shucks! Looks like the file you want to see does not exist. File: {}", self.file_name)
+            write!(f, "Looks like the file you want to see does not exist. File: {}", self.file_name)
         } else {
-            write!(f, "{} is actually a directory. You need to learn the difference!", self.file_name)
+            write!(f, "{} is actually a directory.", self.file_name)
         }
     }
 }
