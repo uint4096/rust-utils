@@ -1,11 +1,5 @@
 /*
- * Things I don't really understand:
  * a. Why do filter and for_each need a ref and why do I need to use as_ref()
- * b. How to properly use enums.
- * c. In get_entries, how do I get an iterator of the same type for both if and
- *    else blocks?
- * d. Read somebody's code to figure out if if-else is supposed to be used the
- *    way I'm using it.
  */
 
 use std::env::args;
@@ -25,20 +19,13 @@ fn get_entries(dir: &str, ignore_hidden: bool) -> Vec<io::Result<DirEntry>> {
         }
     };
 
-    let dir_entries: Vec<io::Result<DirEntry>> = if ignore_hidden {
-        files
-            .filter(|f| {
-                let file = f.as_ref().expect(&get_error(Errors::CorruptFile, None));
+    files
+        .filter(|f| {
+            let file = f.as_ref().expect(&get_error(Errors::CorruptFile, None));
 
-                !ignore_hidden || !file.file_name().to_str().unwrap().starts_with('.')
-            })
-            .collect()
-    } else {
-        // @todo: I don't want to do this.
-        files.filter(|_| true).collect()
-    };
-
-    dir_entries
+            !ignore_hidden || !file.file_name().to_str().unwrap().starts_with('.')
+        })
+        .collect()
 }
 
 fn print_list(dir_entries: Vec<io::Result<DirEntry>>) -> () {
