@@ -6,7 +6,10 @@ pub struct FixedQueue {
 
 impl FixedQueue {
     pub fn new(length: usize) -> Self {
-        FixedQueue { length, queue: VecDeque::new() }
+        FixedQueue {
+            length,
+            queue: VecDeque::new(),
+        }
     }
 
     pub fn enqueue(&mut self, item: String) {
@@ -19,9 +22,5 @@ impl FixedQueue {
 
     pub fn dequeue(&mut self) -> Option<String> {
         self.queue.pop_front()
-    }
-
-    pub fn clear(&mut self) {
-        self.queue.clear();
     }
 }

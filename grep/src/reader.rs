@@ -1,4 +1,7 @@
-use std::{io::{BufRead, BufReader, Lines}, fs::File};
+use std::{
+    fs::File,
+    io::{BufRead, BufReader, Lines},
+};
 
 pub struct Reader(pub String);
 
@@ -8,8 +11,8 @@ impl Reader {
             Ok(file) => {
                 let reader = BufReader::new(file);
                 reader.lines()
-            },
-            Err(e) => panic!("Error while creating reader! {e}")
+            }
+            Err(e) => panic!("Error while creating reader! {e}"),
         }
     }
 }
