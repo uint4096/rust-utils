@@ -31,10 +31,18 @@ fn main() {
         None => String::from(""),
     };
 
+    let mut process_text = create_bindings(options_map, keyword);
     match args.next() {
         Some(path) => {
             if Path::new(&path).exists() {
-                read_from_file(path, keyword, options_map)
+                let reader = Reader(path);
+                let lines = reader.get_lines();
+                lines.for_each(|line| match line {
+                    Ok(text) => {
+                        process_text(text);
+                    }
+                    Err(e) => panic!("Error while reading lines! {e}"),
+                });
             } else {
                 panic!("File does not exist! Path: {path}");
             }
@@ -43,62 +51,48 @@ fn main() {
             let mut text = String::from("");
             let _ = stdin().read_line(&mut text);
             let text = text.trim();
-            read_from_text(text, &keyword)
+            let lines = text.lines();
+            for line in lines {
+                process_text(line.to_owned());
+            }
         },
     };
 }
 
-fn read_from_file(file: String, keyword: String, options: HashMap<char, usize>) {
-    let reader = Reader(file);
-    let lines = reader.get_lines();
+fn create_bindings(options: HashMap<char, usize>, keyword: String) -> Box<dyn FnMut(String) -> ()> {
     let a_queue_size = match options.get(&'a') {
         Some(val) => *val, // Is this idiomatic?
         None => 0,
     };
-
     let b_queue_size = match options.get(&'b') {
         Some(val) => *val,
         None => 0,
     };
-
     let mut b_queue = FixedQueue::new(b_queue_size);
     let mut a_counter: usize = 0;
 
-    lines.for_each(|line| match line {
-        Ok(text) => {
-            if let Some(_) = text.find(&keyword) {
-                let text_match = text.replace(&keyword, &format!("\x1b[31;1m{}\x1b[0m", keyword));
-                while let Some(elem) = b_queue.dequeue() {
-                    println!("{elem}");
-                }
+    Box::new(move |text: String| {
+        if let Some(_) = text.find(&keyword) {
+            let text_match = text.replace(&keyword, &format!("\x1b[31;1m{}\x1b[0m", keyword));
+            while let Some(elem) = b_queue.dequeue() {
+                println!("{elem}");
+            }
 
-                println!("{text_match}");
+            println!("{text_match}");
 
-                if a_queue_size > 0 {
-                    a_counter = 1;
-                }
-            } else {
-                if a_counter > 0 && a_counter <= a_queue_size {
-                    println!("{text}");
-                    a_counter += 1;
-                } else if a_counter > a_queue_size || a_counter == 0 {
-                    a_counter = 0;
-                    if b_queue_size > 0 {
-                        b_queue.enqueue(text);
-                    }
+            if a_queue_size > 0 {
+                a_counter = 1;
+            }
+        } else {
+            if a_counter > 0 && a_counter <= a_queue_size {
+                println!("{text}");
+                a_counter += 1;
+            } else if a_counter > a_queue_size || a_counter == 0 {
+                a_counter = 0;
+                if b_queue.length > 0 {
+                    b_queue.enqueue(text);
                 }
             }
         }
-        Err(e) => panic!("Error while reading lines! {e}"),
-    });
-}
-
-fn read_from_text(text: &str, keyword: &str) {
-    let lines = text.lines();
-    for line in lines {
-        if let Some(_) = line.find(keyword) {
-            let text_match = line.replace(keyword, &format!("\x1b[31;1m{}\x1b[0m", keyword));
-            println!("{text_match}")
-        }
-    }
+    })
 }
