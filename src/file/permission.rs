@@ -1,4 +1,4 @@
-use crate::permissions::types::PermissionTypes;
+use crate::file::permission_types::PermissionTypes;
 
 pub struct Permission {
     user: String,
@@ -13,7 +13,7 @@ impl Permission {
          * st_mode
          * The last (least significant) 9 bits are permission bits. The bits before that represent the file type.
          * To extract the last 9 bits we need to do a bitwise and with a mask of 111111111.
-         * This octal representation for that number is 0o0777.
+         * The octal representation for that number is 0o0777.
          */
         let permission_mask = 0o0777;
         let permission_bits = st_mode & permission_mask;

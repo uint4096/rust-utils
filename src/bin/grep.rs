@@ -1,8 +1,7 @@
+
 use std::{collections::HashMap, env::args, io::stdin, path::Path};
-mod queue;
-mod reader;
-use queue::FixedQueue;
-use reader::Reader;
+use rutils::core::queue::FixedQueue;
+use rutils::file::reader::Reader;
 
 fn main() {
     let options = args().skip(1).filter(|e| e.starts_with('-'));
@@ -49,7 +48,7 @@ fn main() {
         }
         None => loop {
             let mut text = String::from("");
-            let _ = stdin().read_line(&mut text);
+            stdin().read_line(&mut text).expect("Failed to read line!");
             let text = text.trim();
             let lines = text.lines();
             for line in lines {

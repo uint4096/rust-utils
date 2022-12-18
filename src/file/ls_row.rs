@@ -1,4 +1,5 @@
-use crate::{permissions::permission::Permission, utils::time};
+use crate::file::permission::Permission;
+use crate::utils::time;
 use std::{
     fs::Metadata,
     io,

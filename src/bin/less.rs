@@ -1,8 +1,7 @@
+
 use std::{env::args, io::stdin};
-mod reader;
-mod terminal;
-use reader::Reader;
-use terminal::{Operations, Term};
+use rutils::file::reader::Reader;
+use rutils::core::terminal::{Operations, Term};
 use termion::{event::Key, input::TermRead};
 
 fn main() {
@@ -14,12 +13,7 @@ fn main() {
 fn display_text(path: &str) {
     let stdin = stdin();
     let reader = Reader(path.to_owned()); 
-    let mut lines = match reader.get_lines() {
-        Ok(r) => r,
-        Err(e) => {
-            panic!("Failed to read file! Error: {e}")
-        }
-    };
+    let mut lines = reader.get_lines();
 
     let mut terminal = Term::new();
 
@@ -29,9 +23,11 @@ fn display_text(path: &str) {
                 Key::Char('q') => break,
                 Key::Down => {
                     terminal.term_action(Operations::NextLine);
-                    match lines.next().unwrap() {
-                        Ok(line) => println!("{line}"),
-                        Err(e) => panic!("Error while displaying text, {e}"),
+                    if let Some(line) = lines.next() {
+                        match line { 
+                            Ok(line) => println!("{line}"),
+                            Err(e) => panic!("Error while displaying text, {e}"),
+                        }
                     }
                 }
                 _ => {}

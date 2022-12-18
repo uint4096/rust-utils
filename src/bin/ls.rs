@@ -5,11 +5,8 @@
 use std::env::args;
 use std::fs::DirEntry;
 use std::{fs, io};
-mod permissions;
-mod rows;
-mod utils;
-use rows::ls_row::LSRow;
-use utils::errors::{get_error, Errors};
+use rutils::file::ls_row::LSRow;
+use rutils::utils::errors::{get_error, Errors};
 
 fn get_entries(dir: &str, ignore_hidden: bool) -> Vec<io::Result<DirEntry>> {
     let files = match fs::read_dir(dir) {
