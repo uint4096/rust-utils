@@ -6,7 +6,7 @@ use std::env::args;
 use std::fs::DirEntry;
 use std::{fs, io};
 use rutils::file::ls_row::LSRow;
-use rutils::utils::errors::{get_error, Errors};
+use rutils::utils::errors::{Errors};
 
 fn get_entries(dir: &str, ignore_hidden: bool) -> Vec<io::Result<DirEntry>> {
     let files = match fs::read_dir(dir) {
@@ -18,7 +18,7 @@ fn get_entries(dir: &str, ignore_hidden: bool) -> Vec<io::Result<DirEntry>> {
 
     files
         .filter(|f| {
-            let file = f.as_ref().expect(&get_error(Errors::CorruptFile, None));
+            let file = f.as_ref().expect(&Errors::CorruptFile.get_message());
 
             !ignore_hidden || !file.file_name().to_str().unwrap().starts_with('.')
         })
@@ -29,16 +29,16 @@ fn print_list(dir_entries: Vec<io::Result<DirEntry>>) -> () {
     let entries = dir_entries
         .iter()
         .map(|file| {
-            let file_entry = file.as_ref().expect(&get_error(Errors::CorruptFile, None));
+            let file_entry = file.as_ref().expect(&Errors::CorruptFile.get_message());
             let metadata = file_entry
                 .metadata()
-                .expect(&get_error(Errors::MetadataFailure, None));
+                .expect(&Errors::MetadataFailure.get_message());
             let file_name = file_entry.file_name().to_str().unwrap().to_owned();
 
             match LSRow::new(&file_name, metadata) {
                 Ok(e) => e,
                 Err(_) => {
-                    panic!("{}", &get_error(Errors::RowFailure, Some(&file_name)))
+                    panic!("{}", &Errors::RowFailure(&file_name).get_message())
                 }
             }
         })
@@ -51,10 +51,10 @@ fn print_list(dir_entries: Vec<io::Result<DirEntry>>) -> () {
 
 fn print_names(dir_entries: Vec<io::Result<DirEntry>>) -> () {
     let _ = dir_entries.iter().for_each(|entry| {
-        let file = entry.as_ref().expect(&get_error(Errors::CorruptFile, None));
+        let file = entry.as_ref().expect(&Errors::CorruptFile.get_message());
         let metadata = file
             .metadata()
-            .expect(&get_error(Errors::MetadataFailure, None));
+            .expect(&Errors::MetadataFailure.get_message());
         let file_name = file.file_name().to_str().unwrap().to_owned();
 
         if metadata.is_file() {
