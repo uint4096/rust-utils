@@ -1,14 +1,29 @@
-use std::fmt;
+use std::{io::{self, ErrorKind}, fmt, str::Utf8Error};
 
 pub type UtilResult<'a, T> = Result<T, Errors<'a>>;
 
-#[derive(PartialEq, Debug)]
+#[derive(Debug)]
 pub enum Errors<'a> {
     CorruptFile,
     MetadataFailure,
     RowFailure(&'a str),
     FileNameMeta,
-    NoFile(&'a str, bool)
+    NoFile(&'a str, bool),
+    Base(io::Error, ErrorKind),
+    Utf(Utf8Error),
+}
+
+impl From<io::Error> for Errors<'_> {
+    fn from(error: io::Error) -> Self {
+        let kind = error.kind();
+        Errors::Base(error, kind)
+    }
+}
+
+impl From<Utf8Error> for Errors<'_> {
+    fn from(error: Utf8Error) -> Self {
+        Errors::Utf(error)
+    }
 }
 
 impl fmt::Display for Errors<'_> {
@@ -33,7 +48,9 @@ impl Errors<'_> {
                 format!("Looks like the file you want to see does not exist. File: {}", file_name)
             } else {
                 format!("{} is actually a directory.", file_name)
-            }
+            },
+            Errors::Utf(err) => format!("{err}"),
+            Errors::Base(err, _) => format!("{err}"),
         }
     }
 }
