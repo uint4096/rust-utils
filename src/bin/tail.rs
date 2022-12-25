@@ -1,4 +1,5 @@
-use rutils::utils::errors::UtilResult;
+use rutils::{utils::errors::UtilResult};
+use termion::input::TermRead;
 use std::{
     fs::File,
     io::{Read, Seek, SeekFrom},
@@ -9,7 +10,7 @@ fn main() -> UtilResult<'static, ()> {
     const DEFAULT_CHUNK_SIZE: usize = 1000;
     const DEFAULT_LINES: usize = 20;
 
-    let mut file = File::open("./Cargo.lock")?;
+    let mut file = File::open("./test.txt")?;
     let file_size: usize = file.metadata()?.len() as usize;
     let mut chunk_size: usize = if file_size < DEFAULT_CHUNK_SIZE {
         file_size
@@ -67,5 +68,21 @@ fn main() -> UtilResult<'static, ()> {
     });
 
     println!("{out}");
+
+    let mut follow_offset = file_size;
+    loop {
+        match file.seek(SeekFrom::Start(follow_offset as u64)) {
+            Ok(_) => {
+                if let Some(line) = file.read_line()? {
+                    if line.len() > 0 {
+                        println!("{line}");
+                        follow_offset += line.len() + 1;
+                    }
+                }
+            },
+            Err(e) => panic!("{e}")
+        }
+    }
+
     Ok(())
 }
