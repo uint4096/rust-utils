@@ -1,22 +1,24 @@
-use rutils::{utils::errors::UtilResult};
-use termion::input::TermRead;
-use std::{
-    fs::File,
-    io::{Read, Seek, SeekFrom},
-    str,
-};
+use rutils::{file::reader::Reader, utils::errors::UtilResult};
+use std::str;
 
 fn main() -> UtilResult<'static, ()> {
     const DEFAULT_CHUNK_SIZE: usize = 1000;
     const DEFAULT_LINES: usize = 20;
 
-    let mut file = File::open("./test.txt")?;
-    let file_size: usize = file.metadata()?.len() as usize;
-    let mut chunk_size: usize = if file_size < DEFAULT_CHUNK_SIZE {
-        file_size
+    let mut reader = Reader::open_file(String::from("./test.txt"))?;
+    let chunk_size: usize = if reader.size < DEFAULT_CHUNK_SIZE {
+        reader.size
     } else {
         DEFAULT_CHUNK_SIZE
     };
+
+    last_x_lines(&mut reader, chunk_size, DEFAULT_LINES)?;
+    follow(&mut reader)?;
+    Ok(())
+}
+
+fn last_x_lines (reader: &mut Reader, mut chunk_size: usize, lines: usize) -> UtilResult<'static, ()> {
+    let file_size = reader.size;
     let mut offset = if file_size > chunk_size {
         file_size - chunk_size
     } else {
@@ -28,11 +30,9 @@ fn main() -> UtilResult<'static, ()> {
     let mut bytes_processed: usize = 0;
     let mut tail_output: Vec<String> = vec![];
 
-    while lines_count <= DEFAULT_LINES && bytes_processed < file_size {
-        file.seek(SeekFrom::Start(offset as u64))?;
-        file.read_exact(&mut buf)?;
-
-        let buf_str = str::from_utf8(&mut buf);
+    while lines_count <= lines && bytes_processed < file_size {
+        reader.read_from(offset as u64, &mut buf)?;
+        let buf_str = str::from_utf8(&buf);
         tail_output.push(buf_str?.to_owned());
 
         let current_size = buf_str?.matches('\n').count();
@@ -51,10 +51,10 @@ fn main() -> UtilResult<'static, ()> {
     }
 
     tail_output.reverse();
-    let additional_lines = if lines_count < DEFAULT_LINES {
+    let additional_lines = if lines_count < lines {
         0
     } else {
-        lines_count - DEFAULT_LINES
+        lines_count - lines
     };
     let tail_output = tail_output.concat();
     let mut lines = tail_output.split('\n');
@@ -67,22 +67,19 @@ fn main() -> UtilResult<'static, ()> {
         acc
     });
 
-    println!("{out}");
+    print!("{out}");
+    Ok(())
+}
 
-    let mut follow_offset = file_size;
+fn follow (reader: &mut Reader) -> UtilResult<'static, ()> {
     loop {
-        match file.seek(SeekFrom::Start(follow_offset as u64)) {
-            Ok(_) => {
-                if let Some(line) = file.read_line()? {
-                    if line.len() > 0 {
-                        println!("{line}");
-                        follow_offset += line.len() + 1;
-                    }
-                }
-            },
-            Err(e) => panic!("{e}")
+        let mut follow_offset = reader.size;
+        loop {
+            let line = reader.read_line_from(follow_offset as u64)?;
+            if line.len() > 0 {
+                println!("{line}");
+                follow_offset += line.len() + 1;
+            }
         }
     }
-
-    Ok(())
 }

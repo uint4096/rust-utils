@@ -2,8 +2,9 @@
 use std::{collections::HashMap, env::args, io::stdin, path::Path};
 use rutils::core::queue::FixedQueue;
 use rutils::file::reader::Reader;
+use rutils::utils::errors::UtilResult;
 
-fn main() {
+fn main() -> UtilResult<'static, ()> {
     let options = args().skip(1).filter(|e| e.starts_with('-'));
     let mut options_map: HashMap<char, usize> = HashMap::new();
     for option in options {
@@ -34,7 +35,7 @@ fn main() {
     match args.next() {
         Some(path) => {
             if Path::new(&path).exists() {
-                let reader = Reader(path);
+                let reader = Reader::open_file(path)?;
                 let lines = reader.get_lines();
                 lines.for_each(|line| match line {
                     Ok(text) => {
@@ -56,6 +57,8 @@ fn main() {
             }
         },
     };
+
+    Ok(())
 }
 
 fn create_bindings(options: HashMap<char, usize>, keyword: String) -> Box<dyn FnMut(String) -> ()> {

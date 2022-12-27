@@ -2,17 +2,19 @@
 use std::{env::args, io::stdin};
 use rutils::file::reader::Reader;
 use rutils::core::terminal::{Operations, Term};
+use rutils::utils::errors::UtilResult;
 use termion::{event::Key, input::TermRead};
 
-fn main() {
+fn main() -> UtilResult<'static, ()> {
     let mut arg = args().skip(1);
     let file_path = arg.next().expect("Expected the file path!");
-    display_text(&file_path);
+    display_text(file_path)?;
+    Ok(())
 }
 
-fn display_text(path: &str) {
+fn display_text(path: String) -> UtilResult<'static, ()> {
     let stdin = stdin();
-    let reader = Reader(path.to_owned()); 
+    let reader = Reader::open_file(path)?;
     let mut lines = reader.get_lines();
 
     let mut terminal = Term::new();
@@ -37,4 +39,6 @@ fn display_text(path: &str) {
         terminal.term_action(Operations::NextLine);
         terminal.term_action(Operations::ToggleCursor);
     }
+
+    Ok(())
 }

@@ -9,14 +9,14 @@ pub enum Errors<'a> {
     RowFailure(&'a str),
     FileNameMeta,
     NoFile(&'a str, bool),
-    Base(io::Error, ErrorKind),
+    Base(io::Error, Option<ErrorKind>),
     Utf(Utf8Error),
 }
 
 impl From<io::Error> for Errors<'_> {
     fn from(error: io::Error) -> Self {
         let kind = error.kind();
-        Errors::Base(error, kind)
+        Errors::Base(error, Some(kind))
     }
 }
 
