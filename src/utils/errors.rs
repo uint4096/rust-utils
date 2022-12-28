@@ -1,38 +1,38 @@
 use std::{io::{self, ErrorKind}, fmt, str::Utf8Error};
 
-pub type UtilResult<'a, T> = Result<T, Errors<'a>>;
+pub type UtilResult<T> = Result<T, Errors>;
 
 #[derive(Debug)]
-pub enum Errors<'a> {
+pub enum Errors {
     CorruptFile,
     MetadataFailure,
-    RowFailure(&'a str),
+    RowFailure(String),
     FileNameMeta,
-    NoFile(&'a str, bool),
+    NoFile(String, bool),
     Base(io::Error, Option<ErrorKind>),
     Utf(Utf8Error),
 }
 
-impl From<io::Error> for Errors<'_> {
+impl From<io::Error> for Errors {
     fn from(error: io::Error) -> Self {
         let kind = error.kind();
         Errors::Base(error, Some(kind))
     }
 }
 
-impl From<Utf8Error> for Errors<'_> {
+impl From<Utf8Error> for Errors {
     fn from(error: Utf8Error) -> Self {
         Errors::Utf(error)
     }
 }
 
-impl fmt::Display for Errors<'_> {
+impl fmt::Display for Errors {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.get_message())
     }
 }
 
-impl Errors<'_> {
+impl Errors {
     pub fn get_message(&self) -> String {
         let corrupt_file = "Corrupt file entry";
         let metadata_failure = "Unable to fetch metadata";

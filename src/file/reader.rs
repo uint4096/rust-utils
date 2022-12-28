@@ -11,7 +11,7 @@ pub struct Reader {
 }
 
 impl Reader {
-    pub fn open_file(path: String) -> UtilResult<'static, Self> {
+    pub fn open_file(path: String) -> UtilResult<Self> {
         let file = File::open(path)?;
         let size = file.metadata()?.size() as usize;
         Ok(Self {
@@ -25,13 +25,13 @@ impl Reader {
         reader.lines()
     }
 
-    pub fn read_from(&mut self, offset: u64, buf: &mut Vec<u8>) -> UtilResult<'static, ()> {
+    pub fn read_from(&mut self, offset: u64, buf: &mut Vec<u8>) -> UtilResult<()> {
         self.file.seek(SeekFrom::Start(offset))?;
         self.file.read_exact(buf)?;
         Ok(())
     }
 
-    pub fn read_line_from(&mut self, offset: u64) -> UtilResult<'static, String> {
+    pub fn read_line_from(&mut self, offset: u64) -> UtilResult<String> {
         self.file.seek(SeekFrom::Start(offset))?;
         let line = match self.file.read_line()? {
             Some(line) => line,

@@ -5,14 +5,14 @@ use rutils::core::terminal::{Operations, Term};
 use rutils::utils::errors::UtilResult;
 use termion::{event::Key, input::TermRead};
 
-fn main() -> UtilResult<'static, ()> {
+fn main() -> UtilResult<()> {
     let mut arg = args().skip(1);
     let file_path = arg.next().expect("Expected the file path!");
     display_text(file_path)?;
     Ok(())
 }
 
-fn display_text(path: String) -> UtilResult<'static, ()> {
+fn display_text(path: String) -> UtilResult<()> {
     let stdin = stdin();
     let reader = Reader::open_file(path)?;
     let mut lines = reader.get_lines();

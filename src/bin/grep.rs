@@ -4,7 +4,7 @@ use rutils::core::queue::FixedQueue;
 use rutils::file::reader::Reader;
 use rutils::utils::errors::UtilResult;
 
-fn main() -> UtilResult<'static, ()> {
+fn main() -> UtilResult<()> {
     let options = args().skip(1).filter(|e| e.starts_with('-'));
     let mut options_map: HashMap<char, usize> = HashMap::new();
     for option in options {
