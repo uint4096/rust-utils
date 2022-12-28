@@ -38,7 +38,7 @@ fn print_list(dir_entries: Vec<io::Result<DirEntry>>) -> () {
             match LSRow::new(&file_name, metadata) {
                 Ok(e) => e,
                 Err(_) => {
-                    panic!("{}", &Errors::RowFailure(&file_name).get_message())
+                    panic!("{}", &Errors::RowFailure(file_name).get_message())
                 }
             }
         })

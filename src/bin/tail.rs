@@ -17,7 +17,7 @@ fn main() -> UtilResult<()> {
     Ok(())
 }
 
-fn last_x_lines<'a> (reader: &mut Reader, mut chunk_size: usize, lines: usize) -> UtilResult<()> {
+fn last_x_lines (reader: &mut Reader, mut chunk_size: usize, lines: usize) -> UtilResult<()> {
     let file_size = reader.size;
     let mut offset = if file_size > chunk_size {
         file_size - chunk_size
@@ -71,7 +71,7 @@ fn last_x_lines<'a> (reader: &mut Reader, mut chunk_size: usize, lines: usize) -
     Ok(())
 }
 
-fn follow<'a> (reader: &mut Reader) -> UtilResult<()> {
+fn follow (reader: &mut Reader) -> UtilResult<()> {
     loop {
         let mut follow_offset = reader.size;
         loop {

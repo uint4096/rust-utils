@@ -9,3 +9,4 @@ edition = "2021"
 users = "0.11.0"
 chrono = "0.4.23"
 termion = "*"
+clap = { version = "4.0.32", features = ["derive"] }
