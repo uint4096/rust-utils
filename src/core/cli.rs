@@ -1,89 +1,83 @@
-use std::collections::HashMap;
-
 use clap::Parser;
 
 #[derive(Parser)]
 pub struct Common {
-    file: String,
+    pub file: String,
 }
 
 #[derive(Parser)]
 pub struct Grep {
-    pattern: String,
-    file: Option<String>,
+    pub pattern: String,
+    pub file: Option<String>,
     #[arg(short, long)]
-    after: Option<u32>,
+    pub after: Option<usize>,
     #[arg(short, long)]
-    before: Option<u32>
+    pub before: Option<usize>
 }
 
 #[derive(Parser)]
 pub struct Ls {
-    file: String,
+    pub dir: Option<String>,
     #[arg(short, long)]
-    list: bool,
+    pub list: bool,
     #[arg(short, long)]
-    all: bool,
+    pub all: bool,
+}
+
+#[derive(Parser)]
+pub struct Tail {
+    pub file: String,
+    #[arg(short, long)]
+    pub lines: Option<usize>,
 }
 
 impl Common {
-    pub fn args() -> HashMap<String, String> {
+    pub fn args() -> Self {
         let cli = Common::parse();
-        let mut args: HashMap<String, String> = HashMap::new();
-        args.insert(String::from("file"), cli.file);
-        args
+        Common { file: cli.file }
     }
 }
 
 impl Grep {
-    pub fn new() -> Self {
-        Grep::parse()
-    }
-
-    pub fn args(self) -> HashMap<String, String> {
-        let mut args: HashMap<String, String> = HashMap::new();
-        if let Some(file) = self.file {
-            args.insert(String::from("file"), file);
-        }
-
-        args.insert(String::from("pattern"), self.pattern);
-        args
-    }
-
-    pub fn options(&self) -> HashMap<String, u32> {
-        let after = match self.after {
+    pub fn args() -> Self {
+        let cli = Grep::parse();
+        let after = match cli.after {
             Some(after) => after,
             None => 0,
         };
 
-        let before = match self.before {
+        let before = match cli.before {
             Some(before) => before,
             None => 0,
         };
 
-        let mut options: HashMap<String, u32> = HashMap::new();
-        options.insert(String::from("before"), before);
-        options.insert(String::from("after"), after);
-        options
+        Self {
+            file: cli.file,
+            pattern: cli.pattern,
+            before: Some(before),
+            after: Some(after),
+        }
     }
 }
 
 impl Ls {
-    pub fn new() -> Self {
-        Ls::parse()
-    }
-    
-    pub fn args(self) -> HashMap<String, String> {
-        let mut args: HashMap<String, String> = HashMap::new();
-        args.insert(String::from("file"), self.file);
-        args
-    }
-
-    pub fn options(&self) -> HashMap<String, bool> {
-        let mut options: HashMap<String, bool> = HashMap::new();
-        options.insert(String::from("list"), self.list);
-        options.insert(String::from("all"), self.all);
-        options
+    pub fn args() -> Self {
+        let cli = Ls::parse();
+        let dir = if let Some(dir) = cli.dir { dir } else { String::from(".") };
+        Self {
+            dir: Some(dir),
+            all: cli.all,
+            list: cli.list,
+        }
     }
 }
 
+impl Tail {
+    pub fn args() -> Self {
+        let cli = Tail::parse();
+        Self {
+            file: cli.file,
+            lines: cli.lines,
+        }
+    }
+}

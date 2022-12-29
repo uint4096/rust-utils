@@ -1,10 +1,6 @@
-/*
- * a. Why do filter and for_each need a ref and why do I need to use as_ref()
- */
-
-use std::env::args;
 use std::fs::DirEntry;
 use std::{fs, io};
+use rutils::core::cli::Ls;
 use rutils::file::ls_row::LSRow;
 use rutils::utils::errors::{Errors};
 
@@ -68,25 +64,12 @@ fn print_names(dir_entries: Vec<io::Result<DirEntry>>) -> () {
 }
 
 fn main() {
-    let ls_args: Vec<String> = args().skip(1).collect();
-    let ls_options = ls_args.iter().find(|a| a.starts_with('-'));
-    let ls_dir = ls_args.iter().find(|a| !a.starts_with('-'));
-
-    let options = match ls_options {
-        Some(option) => option.chars().collect(),
-        None => {
-            vec![]
-        }
-    };
-
-    let dir = match ls_dir {
-        Some(dir) => dir,
-        None => ".",
-    };
-
-    let ignore_hidden = !options.contains(&'a');
+    let args = Ls::args();
+    let dir = args.dir.unwrap();
+    let list = args.list;
+    let ignore_hidden = !args.all;
     let dir_entries = get_entries(&dir, ignore_hidden);
-    let _ = if options.contains(&'l') {
+    let _ = if list {
         print_list(dir_entries)
     } else {
         print_names(dir_entries)

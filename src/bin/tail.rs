@@ -1,18 +1,21 @@
-use rutils::{file::reader::Reader, utils::errors::UtilResult};
+use rutils::{file::reader::Reader, utils::errors::UtilResult, core::cli::Tail};
 use std::str;
 
 fn main() -> UtilResult<()> {
+    let args = Tail::args();
     const DEFAULT_CHUNK_SIZE: usize = 1000;
     const DEFAULT_LINES: usize = 20;
 
-    let mut reader = Reader::open_file(String::from("./test.txt"))?;
+    let file_path = args.file;
+    let lines = if let Some(lines) = args.lines { lines } else { DEFAULT_LINES };
+    let mut reader = Reader::open_file(file_path)?;
     let chunk_size: usize = if reader.size < DEFAULT_CHUNK_SIZE {
         reader.size
     } else {
         DEFAULT_CHUNK_SIZE
     };
 
-    last_x_lines(&mut reader, chunk_size, DEFAULT_LINES)?;
+    last_x_lines(&mut reader, chunk_size, lines)?;
     follow(&mut reader)?;
     Ok(())
 }

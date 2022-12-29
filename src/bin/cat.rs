@@ -1,5 +1,5 @@
+use rutils::core::cli::Common;
 use rutils::utils::errors::{UtilResult, Errors};
-use std::env;
 use std::fs;
 use std::path::Path;
 
@@ -17,7 +17,8 @@ fn read_path(is_path_ok: bool, file_path: String) -> UtilResult<String> {
 }
 
 fn main() {
-    let file_path = env::args().skip(1).next().unwrap();
+    let args= Common::args();
+    let file_path = args.file;
     let is_path_ok = Path::new(&file_path).is_file();
     let _ = match read_path(is_path_ok, file_path) {
         Ok(str) => {

@@ -1,13 +1,13 @@
 
-use std::{env::args, io::stdin};
+use std::io::stdin;
+use rutils::core::cli::Common;
 use rutils::file::reader::Reader;
 use rutils::core::terminal::{Operations, Term};
 use rutils::utils::errors::UtilResult;
 use termion::{event::Key, input::TermRead};
 
 fn main() -> UtilResult<()> {
-    let mut arg = args().skip(1);
-    let file_path = arg.next().expect("Expected the file path!");
+    let file_path = Common::args().file;
     display_text(file_path)?;
     Ok(())
 }
