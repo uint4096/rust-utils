@@ -1,6 +1,6 @@
 
 use std::io::stdin;
-use rutils::core::cli::Common;
+use rutils::core::cli::{Common, CliArgs};
 use rutils::file::reader::Reader;
 use rutils::core::terminal::{Operations, Term};
 use rutils::utils::errors::UtilResult;

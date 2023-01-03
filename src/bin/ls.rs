@@ -1,6 +1,6 @@
 use std::fs::DirEntry;
 use std::{fs, io};
-use rutils::core::cli::Ls;
+use rutils::core::cli::{Ls, CliArgs};
 use rutils::file::ls_row::LSRow;
 use rutils::utils::errors::{Errors};
 

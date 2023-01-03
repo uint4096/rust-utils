@@ -1,6 +1,5 @@
-
 use std::{io::stdin, path::Path};
-use rutils::core::cli::Grep;
+use rutils::core::cli::{Grep, CliArgs};
 use rutils::core::queue::FixedQueue;
 use rutils::file::reader::Reader;
 use rutils::utils::errors::UtilResult;

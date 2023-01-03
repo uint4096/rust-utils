@@ -1,8 +1,19 @@
 use clap::Parser;
 
+pub trait CliArgs {
+    fn args() -> Self;
+}
+
 #[derive(Parser)]
 pub struct Common {
     pub file: String,
+}
+
+impl CliArgs for Common {
+    fn args() -> Self {
+        let cli = Common::parse();
+        Common { file: cli.file }
+    }
 }
 
 #[derive(Parser)]
@@ -15,31 +26,8 @@ pub struct Grep {
     pub before: Option<usize>
 }
 
-#[derive(Parser)]
-pub struct Ls {
-    pub dir: Option<String>,
-    #[arg(short, long)]
-    pub list: bool,
-    #[arg(short, long)]
-    pub all: bool,
-}
-
-#[derive(Parser)]
-pub struct Tail {
-    pub file: String,
-    #[arg(short, long)]
-    pub lines: Option<usize>,
-}
-
-impl Common {
-    pub fn args() -> Self {
-        let cli = Common::parse();
-        Common { file: cli.file }
-    }
-}
-
-impl Grep {
-    pub fn args() -> Self {
+impl CliArgs for Grep {
+    fn args() -> Self {
         let cli = Grep::parse();
         let after = match cli.after {
             Some(after) => after,
@@ -60,8 +48,17 @@ impl Grep {
     }
 }
 
-impl Ls {
-    pub fn args() -> Self {
+#[derive(Parser)]
+pub struct Ls {
+    pub dir: Option<String>,
+    #[arg(short, long)]
+    pub list: bool,
+    #[arg(short, long)]
+    pub all: bool,
+}
+
+impl CliArgs for Ls {
+    fn args() -> Self {
         let cli = Ls::parse();
         let dir = if let Some(dir) = cli.dir { dir } else { String::from(".") };
         Self {
@@ -72,8 +69,15 @@ impl Ls {
     }
 }
 
-impl Tail {
-    pub fn args() -> Self {
+#[derive(Parser)]
+pub struct Tail {
+    pub file: String,
+    #[arg(short, long)]
+    pub lines: Option<usize>,
+}
+
+impl CliArgs for Tail {
+    fn args() -> Self {
         let cli = Tail::parse();
         Self {
             file: cli.file,

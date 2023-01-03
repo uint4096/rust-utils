@@ -1,4 +1,4 @@
-use rutils::{file::reader::Reader, utils::errors::UtilResult, core::cli::Tail};
+use rutils::{file::reader::Reader, utils::errors::UtilResult, core::cli::{Tail, CliArgs}};
 use std::str;
 
 fn main() -> UtilResult<()> {
