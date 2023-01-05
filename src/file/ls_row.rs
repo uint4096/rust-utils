@@ -1,8 +1,7 @@
-use crate::file::permission::Permission;
+use crate::{file::permission::Permission, utils::errors::UtilResult};
 use crate::utils::time;
 use std::{
     fs::Metadata,
-    io,
     os::unix::prelude::{MetadataExt, PermissionsExt},
     time::SystemTime,
 };
@@ -20,7 +19,7 @@ pub struct LSRow {
 }
 
 impl LSRow {
-    pub fn new(name: &str, metadata: Metadata) -> io::Result<LSRow> {
+    pub fn new<'a>(name: &str, metadata: Metadata) -> UtilResult<'a, LSRow> {
         let owner = get_user_by_uid(metadata.uid())
             .unwrap()
             .name()
@@ -43,12 +42,12 @@ impl LSRow {
             last_modified: metadata.modified()?,
             links: metadata.nlink(),
             size: metadata.size(),
-            name: name.to_owned(),
+            name: name.to_string(),
         })
     }
 
     pub fn format_rows(mut rows: Vec<LSRow>) -> Vec<String> {
-        let format_with_spaces = |max_len: usize, elem: &String| {
+        let format_with_spaces = |max_len: usize, elem: &str| {
             let num_spaces = max_len - elem.len();
             let spaces = (0..num_spaces).fold(String::from(""), |mut s, _| {
                 s.push(' ');

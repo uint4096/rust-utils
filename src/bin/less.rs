@@ -6,15 +6,10 @@ use rutils::core::terminal::{Operations, Term};
 use rutils::utils::errors::UtilResult;
 use termion::{event::Key, input::TermRead};
 
-fn main() -> UtilResult<()> {
+fn main() -> UtilResult<'static, ()> {
     let file_path = Common::args().file;
-    display_text(file_path)?;
-    Ok(())
-}
-
-fn display_text(path: String) -> UtilResult<()> {
     let stdin = stdin();
-    let reader = Reader::open_file(path)?;
+    let reader = Reader::open_file(&file_path)?;
     let mut lines = reader.get_lines();
 
     let mut terminal = Term::new();
@@ -26,10 +21,7 @@ fn display_text(path: String) -> UtilResult<()> {
                 Key::Down => {
                     terminal.term_action(Operations::NextLine);
                     if let Some(line) = lines.next() {
-                        match line { 
-                            Ok(line) => println!("{line}"),
-                            Err(e) => panic!("Error while displaying text, {e}"),
-                        }
+                        println!("{}", line?);
                     }
                 }
                 _ => {}

@@ -12,12 +12,12 @@ impl FixedQueue {
         }
     }
 
-    pub fn enqueue(&mut self, item: String) {
+    pub fn enqueue(&mut self, item: &str) {
         if self.length == self.queue.len() {
             self.queue.pop_front();
         }
 
-        self.queue.push_back(item);
+        self.queue.push_back(item.to_string());
     }
 
     pub fn dequeue(&mut self) -> Option<String> {

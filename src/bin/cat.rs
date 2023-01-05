@@ -3,7 +3,7 @@ use rutils::utils::errors::{UtilResult, Errors};
 use std::fs;
 use std::path::Path;
 
-fn read_path(is_path_ok: bool, file_path: String) -> UtilResult<String> {
+fn read_path(is_path_ok: bool, file_path: &str) -> UtilResult<String> {
     if is_path_ok {
         match fs::read_to_string(&file_path) {
             Ok(res) => Ok(res),
@@ -20,7 +20,7 @@ fn main() {
     let args= Common::args();
     let file_path = args.file;
     let is_path_ok = Path::new(&file_path).is_file();
-    let _ = match read_path(is_path_ok, file_path) {
+    match read_path(is_path_ok, &file_path) {
         Ok(str) => {
             println!("{}", str)
         }

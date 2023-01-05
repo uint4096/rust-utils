@@ -2,7 +2,7 @@ use std::fs::DirEntry;
 use std::{fs, io};
 use rutils::core::cli::{Ls, CliArgs};
 use rutils::file::ls_row::LSRow;
-use rutils::utils::errors::{Errors};
+use rutils::utils::errors::Errors;
 
 fn get_entries(dir: &str, ignore_hidden: bool) -> Vec<io::Result<DirEntry>> {
     let files = match fs::read_dir(dir) {
@@ -29,12 +29,16 @@ fn print_list(dir_entries: Vec<io::Result<DirEntry>>) -> () {
             let metadata = file_entry
                 .metadata()
                 .expect(&Errors::MetadataFailure.get_message());
-            let file_name = file_entry.file_name().to_str().unwrap().to_owned();
+
+            let file_name = match file_entry.file_name().into_string() {
+                Ok(name) => name,
+                Err(_) => String::from("[unknown_name]"),
+            };
 
             match LSRow::new(&file_name, metadata) {
                 Ok(e) => e,
                 Err(_) => {
-                    panic!("{}", &Errors::RowFailure(file_name).get_message())
+                    panic!("{}", &Errors::RowFailure(&file_name).get_message())
                 }
             }
         })
@@ -51,7 +55,8 @@ fn print_names(dir_entries: Vec<io::Result<DirEntry>>) -> () {
         let metadata = file
             .metadata()
             .expect(&Errors::MetadataFailure.get_message());
-        let file_name = file.file_name().to_str().unwrap().to_owned();
+        let file_name = file.file_name();
+        let file_name = file_name.to_str().unwrap();
 
         if metadata.is_file() {
             print!("{} ", file_name);

@@ -1,49 +1,53 @@
-use std::{io::{self, ErrorKind}, fmt, str::Utf8Error};
+use std::{io::{self, ErrorKind}, fmt, str::Utf8Error, string::FromUtf8Error};
 
-pub type UtilResult<T> = Result<T, Errors>;
+pub type UtilResult<'a, T> = Result<T, Errors<'a>>;
 
 #[derive(Debug)]
-pub enum Errors {
+pub enum Errors<'a> {
     CorruptFile,
     MetadataFailure,
-    RowFailure(String),
-    FileNameMeta,
-    NoFile(String, bool),
+    RowFailure(&'a str),
+    NoFile(&'a str, bool),
     Base(io::Error, Option<ErrorKind>),
     Utf(Utf8Error),
+    FromUtf(FromUtf8Error),
 }
 
-impl From<io::Error> for Errors {
+impl<'a> From<io::Error> for Errors<'a> {
     fn from(error: io::Error) -> Self {
         let kind = error.kind();
         Errors::Base(error, Some(kind))
     }
 }
 
-impl From<Utf8Error> for Errors {
+impl<'a> From<Utf8Error> for Errors<'a> {
     fn from(error: Utf8Error) -> Self {
         Errors::Utf(error)
     }
 }
 
-impl fmt::Display for Errors {
+impl<'a> From<FromUtf8Error> for Errors<'a> {
+    fn from(error: FromUtf8Error) -> Self {
+        Errors::FromUtf(error)
+    }
+}
+
+impl<'a> fmt::Display for Errors<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.get_message())
     }
 }
 
-impl Errors {
+impl<'a> Errors<'a> {
     pub fn get_message(&self) -> String {
         let corrupt_file = "Corrupt file entry";
         let metadata_failure = "Unable to fetch metadata";
         let row_failure = "Unable to create row for this file";
-        let file_name_meta = "[Meta] You need to specify a file name for this error type";
 
         match self {
             Errors::CorruptFile => format!("{corrupt_file}!"),
             Errors::MetadataFailure => format!("{metadata_failure}!"),
             Errors::RowFailure(file_name) => format!("{row_failure}! File name: {file_name}"),
-            Errors::FileNameMeta => format!("{file_name_meta}"),
             Errors::NoFile(file_name, is_dir) => if !is_dir {
                 format!("Looks like the file you want to see does not exist. File: {}", file_name)
             } else {
@@ -51,6 +55,7 @@ impl Errors {
             },
             Errors::Utf(err) => format!("{err}"),
             Errors::Base(err, _) => format!("{err}"),
+            Errors::FromUtf(err) => format!("{err}"),
         }
     }
 }
